@@ -1,0 +1,36 @@
+#include <Wire.h>
+
+#define PCF8591T_ADDRESS 0x48  // Address of PCF8591T A/D converter
+
+void setup() {
+  Wire.begin();
+  Serial.begin(115200);
+}
+
+void loop() {
+  // Request a conversion for each analog input (0 to 3)
+  for (int channel = 0; channel < 4; channel++) {
+    Wire.beginTransmission(PCF8591T_ADDRESS);
+    Wire.write(channel); // Select the analog channel (0 to 3)
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8591T_ADDRESS, 2);  // Request 2 bytes from PCF8591T
+
+    if (Wire.available() >= 2) {
+
+      byte analogValue = Wire.read() << 8 | Wire.read();;
+      float voltage = analogValue * (5.0 / 256.0);
+
+      Serial.print("Channel ");
+      Serial.print(channel);
+      Serial.print(": ");
+      Serial.print("Analog Value: ");
+      Serial.print(analogValue);
+      Serial.print("\tVoltage: ");
+      Serial.print(voltage, 3);  // Print voltage with 2 decimal places
+      Serial.println(" V");
+    }
+
+    delay(1000); // Delay between readings
+  }
+}
