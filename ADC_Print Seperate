@@ -1,0 +1,40 @@
+#include <Wire.h>
+
+#define PCF8591_ADDRESS 0x48 // Address of the PCF8591T
+
+void setup() {
+  Wire.begin();
+  Serial.begin(115200);
+}
+
+void loop() {
+  float voltage0 = readChannel(1);
+  float voltage1 = readChannel(2);
+  float voltage2 = readChannel(3);
+  float voltage3 = readChannel(0);
+
+  Serial.print("Channel 0 Voltage (V): ");
+  Serial.println(voltage0);
+  Serial.print("Channel 1 Voltage (V): ");
+  Serial.println(voltage1);
+  Serial.print("Channel 2 Voltage (V): ");
+  Serial.println(voltage2);
+  Serial.print("Channel 3 Voltage (V): ");
+  Serial.println(voltage3);
+
+  delay(1000); // Wait for a second before the next reading
+}
+
+float readChannel(int channel) {
+  // Select the channel and start a conversion
+  Wire.beginTransmission(PCF8591_ADDRESS);
+  Wire.write(0x40 | channel); // Control byte, 0x40 sets the auto-increment bit
+  Wire.endTransmission();
+
+  // Request and read analog value
+  Wire.requestFrom(PCF8591_ADDRESS, 2); // Request 2 bytes (8-bit ADC value)
+  int rawValue = Wire.read();
+
+  // Convert raw value to voltage in volts
+  return (float)map(rawValue, 0, 255, 0, 5000) / 1000.0; // Map to a 0-5V range and return the voltage
+}
